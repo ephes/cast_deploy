@@ -10,7 +10,7 @@
       <input type="text" id="messageText" autocomplete="off" />
       <button>Send</button>
     </form>
-    <ul id="messages"></ul>
+    <pre id="messages"></pre>
     <script>
       var client_id = Date.now();
       var ws = new WebSocket('ws://localhost:8000/ws');
@@ -18,10 +18,8 @@
       var ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
       ws.onmessage = function (event) {
         var messages = document.getElementById('messages');
-        var message = document.createElement('li');
         var content = document.createTextNode(event.data);
-        message.appendChild(content);
-        messages.appendChild(message);
+        messages.appendChild(content);
       };
       function sendMessage(event) {
         var input = document.getElementById('messageText');
