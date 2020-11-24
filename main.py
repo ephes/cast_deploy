@@ -66,18 +66,18 @@ async def websocket_endpoint(websocket: WebSocket):
 async def run_deploy():
     print("running deployment")
     proc = await asyncio.create_subprocess_shell(
-        "./deploy_cast_hosting.sh",
-        # "./sample.sh",
+        #"./deploy_cast_hosting.sh",
+        "./sample.sh",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT,
     )
     while True:
         data = await proc.stdout.readline()
-        if data == b'':
+        if len(data) == 0:
             break
       
         data = data.decode('UTF-8')
-        print("data: ", data)
+        print("data: ", data, end="")
         await ws.send_text(data)
 
     print('return code:', proc.returncode)
