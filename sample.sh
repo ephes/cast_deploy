@@ -1,13 +1,6 @@
 #!/usr/bin/env fish
 
-echo "1"
-sleep 2
-
-echo "2"
-sleep 2
-
-echo "3"
-sleep 2
-
-echo "END"
-exit 666
+for i in (seq 1 100)
+    echo $i
+    sleep 0.5
+end
