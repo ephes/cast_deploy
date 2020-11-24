@@ -47,7 +47,6 @@ html = """
 </html>
 """
 
-OUTPUT={"foo": []}
 
 @app.get("/")
 async def get():
@@ -92,7 +91,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
 async def run_deploy():
     print("running deployment")
     proc = await asyncio.create_subprocess_shell(
-        #"./deploy_cast_hosting.sh",
+        # "./deploy_cast_hosting.sh",
         "./sample.sh",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT,
@@ -101,12 +100,12 @@ async def run_deploy():
         data = await proc.stdout.readline()
         if len(data) == 0:
             break
-      
-        data = data.decode('UTF-8')
+
+        data = data.decode("UTF-8")
         print("data: ", data, end="")
         await manager.broadcast(data)
 
-    print('return code:', proc.returncode)
+    print("return code:", proc.returncode)
     print("deployment complete")
 
 
