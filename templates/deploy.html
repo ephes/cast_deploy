@@ -10,7 +10,7 @@
       <input type="text" id="messageText" autocomplete="off" />
       <button>Send</button>
     </form>
-    <pre id="messages"></pre>
+    <textarea id="messages" name="logview" rows="50" cols="100"> </textarea>
     <script>
       var client_id = Date.now();
       var ws = new WebSocket('ws://localhost:8000/ws');
@@ -20,6 +20,7 @@
         var messages = document.getElementById('messages');
         var content = document.createTextNode(event.data);
         messages.appendChild(content);
+        messages.scrollTop = messages.scrollHeight;
       };
       function sendMessage(event) {
         var input = document.getElementById('messageText');
