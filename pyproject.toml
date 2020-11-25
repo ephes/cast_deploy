@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "cast_deploy"
+name = "deployable"
 version = "0.1.0"
 description = ""
 authors = ["Jochen Wersdörfer <jochen@wersdoerfer.de>"]
