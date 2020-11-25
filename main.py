@@ -15,7 +15,7 @@ templates = Jinja2Templates(directory="templates")
 
 @app.get("/", response_class=HTMLResponse)
 async def get(request: Request):
-    return templates.TemplateResponse("deploy.html", {"request": request})
+    return templates.TemplateResponse("deploy.html", {"request": request, "counter": "{{ counter }}"})
 
 
 class ConnectionManager:

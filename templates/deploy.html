@@ -5,12 +5,13 @@
   </head>
   <body>
     <h1>WebSocket Chat</h1>
+    <div id="counter">Counter: {{ counter }}</div>
     <h2>Your ID: <span id="ws-id"></span></h2>
     <form action="" onsubmit="sendMessage(event)">
       <input type="text" id="messageText" autocomplete="off" />
       <button>Send</button>
     </form>
-    <textarea id="messages" name="logview" rows="50" cols="100"> </textarea>
+    <textarea id="messages" name="logview" rows="50" cols="100"></textarea>
     <script>
       var client_id = Date.now();
       document.querySelector('#ws-id').textContent = client_id;
@@ -27,6 +28,24 @@
         input.value = '';
         event.preventDefault();
       }
+    </script>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const Counter = {
+        data() {
+          return {
+            counter: 0,
+          };
+        },
+        mounted() {
+          setInterval(() => {
+            this.counter++;
+          }, 1000);
+        },
+      };
+
+      console.log('foobarbaz');
+      Vue.createApp(Counter).mount('#counter');
     </script>
   </body>
 </html>
