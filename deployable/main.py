@@ -6,9 +6,24 @@ from typing import List
 from fastapi import Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import BackgroundTasks, FastAPI, WebSocket, WebSocketDisconnect
 
 app = FastAPI()
+
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 templates = Jinja2Templates(directory="templates")
 
@@ -16,6 +31,11 @@ templates = Jinja2Templates(directory="templates")
 @app.get("/", response_class=HTMLResponse)
 async def get(request: Request):
     return templates.TemplateResponse("deploy.html", {"request": request, "counter": "{{ counter }}"})
+
+
+@app.get("/hello")
+async def get():
+    return {"message": "hello from fastapi"}
 
 
 class ConnectionManager:
@@ -56,7 +76,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
 async def run_deploy():
     print("running deployment")
     proc = await asyncio.create_subprocess_shell(
-        # "./deploy_cast_hosting.sh",
+        #"./deploy_cast_hosting.sh",
         "./sample.sh",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT,
