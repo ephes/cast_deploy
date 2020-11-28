@@ -2,14 +2,28 @@ import asyncio
 import subprocess
 
 from typing import List
+from sqlalchemy.orm import Session
 
-from fastapi import Request
+from fastapi import Depends, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import BackgroundTasks, FastAPI, WebSocket, WebSocketDisconnect
 
+from . import crud, models, schemas
+from .database import SessionLocal, engine, database
+
 app = FastAPI()
+
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 
 origins = [
     "http://localhost",
@@ -28,6 +42,29 @@ app.add_middleware(
 templates = Jinja2Templates(directory="templates")
 
 
+@app.on_event("startup")
+async def startup():
+    await database.connect()
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
+
+
+@app.post("/users/", response_model=schemas.User)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return crud.create_user(db=db, user=user)
+
+
+@app.get("/users2/", response_model=List[schemas.User])
+async def async_read_users():
+    return await crud.get_async_users(database)
+
+
 @app.get("/", response_class=HTMLResponse)
 async def get(request: Request):
     return templates.TemplateResponse("deploy.html", {"request": request, "counter": "{{ counter }}"})
@@ -36,6 +73,12 @@ async def get(request: Request):
 @app.get("/hello")
 async def get():
     return {"message": "hello from fastapi"}
+
+
+@app.get("/users/", response_model=List[schemas.User])
+def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    users = crud.get_users(db, skip=skip, limit=limit)
+    return users
 
 
 class ConnectionManager:
@@ -76,7 +119,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
 async def run_deploy():
     print("running deployment")
     proc = await asyncio.create_subprocess_shell(
-        #"./deploy_cast_hosting.sh",
+        # "./deploy_cast_hosting.sh",
         "./sample.sh",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT,
