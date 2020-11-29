@@ -1458,7 +1458,7 @@ notebook = ">=4.4.1"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "5e6a6b28ab63bf2db07e942d2ce18826fafe248a12c8f4a013a4879714a03498"
+content-hash = "f394b2dc103b9f21188875cc8fadfaaebd79f84350bd9749702d0d3f9137d9ad"
 
 [metadata.files]
 aiofiles = [
