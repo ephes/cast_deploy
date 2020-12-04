@@ -16,6 +16,7 @@ databases = {extras = ["postgresql"], version = "^0.4.1"}
 jupyter = "^1.0.0"
 nb-black = "^1.0.7"
 python-multipart = "^0.0.5"
+asyncpg = "^0.21.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
