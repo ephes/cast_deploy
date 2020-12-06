@@ -21,7 +21,7 @@ python-jose = {extras = ["cryptography"], version = "^3.2.0"}
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
+pytest = "^6.0"
 bpython = "^0.20.1"
 
 [tool.black]
@@ -30,3 +30,11 @@ line-length = 120
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+DATABASE_URL = "sqlite:///./test.db"
+minversion = "6.0"
+addopts = "--reuse-db -p no:warnings"
+testpaths = [
+    "backend/tests",
+]
