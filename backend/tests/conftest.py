@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from fastapi.testclient import TestClient
 
+from .. import crud
 from ..models import User
 from ..database import Base
 from ..main import app, get_db
@@ -47,9 +48,10 @@ def password():
 
 @pytest.fixture
 def user(db, password):
-    kwargs = dict(username="user1", hashed_password=get_password_hash(password), is_active=True)
-    user = db.query(User).filter_by(username=kwargs["username"]).first()
-    if not user:
-        user = User(username="user1", hashed_password=get_password_hash("password"), is_active=True)
-        db.add(user)
+    username = "user1"
+    if (user := crud.get_user_by_name(db, username)) is not None:
+        # return early
+        return user
+    user = User(username=username, hashed_password=get_password_hash(password), is_active=True)
+    db.add(user)
     return user

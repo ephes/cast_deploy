@@ -22,6 +22,15 @@ async def get_async_users(db):
     return [user_schema(**row) for row in await db.fetch_all(query)]
 
 
+async def aget_user_by_name(db, username):
+    stmt = await db.prepare("select * from users where username = $1")
+    return await stmt.fetchrow(username)
+
+
+def get_user_by_name(db, username):
+    return db.query(models.User).filter_by(username=username).first()
+
+
 def create_user(db: Session, user: schemas.UserCreate):
     fake_hashed_password = user.password + "notreallyhashed"
     db_user = models.User(email=user.email, hashed_password=fake_hashed_password)
