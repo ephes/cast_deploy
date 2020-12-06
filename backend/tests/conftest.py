@@ -1,4 +1,4 @@
-from pytest import fixture
+import pytest
 
 from fastapi.testclient import TestClient
 
@@ -7,6 +7,11 @@ from ..main import app
 test_client = TestClient(app)
 
 
-@fixture
+@pytest.fixture
 def client():
     return test_client
+
+
+@pytest.fixture
+def user():
+    return "asdf"
