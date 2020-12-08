@@ -1,5 +1,7 @@
 # hmm, maybe just use just
 
+uvicorn backend.main:app --reload
+
 PYTHONPATH=. alembic revision --autogenerate -m "initial migration"
 PYTHONPATH=. alembic upgrade head
 
