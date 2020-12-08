@@ -1,36 +1,31 @@
 import pytest
 
+from databases import Database
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from fastapi.testclient import TestClient
 
 from .. import crud
-from ..models import User
-from ..database import Base
-from ..main import app, get_db
+from ..models import User, Base
+from ..config import settings
+from ..main import app, get_db, get_async_db
 from ..auth import get_password_hash
 
 
 test_client = TestClient(app)
 # SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+# SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+# TEST_DATABASE_URL = "postgres://deployable:@localhost:5432/test_deployable"
+TEST_DATABASE_URL = "sqlite:///./test.db"
+#settings.database_url = TEST_DATABASE_URL
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+print("settings.database_url: ", settings.database_url)
+
+engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 Base.metadata.create_all(bind=engine)
-
-
-def override_get_db():
-    try:
-        db = TestingSessionLocal()
-        yield db
-    finally:
-        db.close()
-
-
-app.dependency_overrides[get_db] = override_get_db
 
 
 @pytest.fixture

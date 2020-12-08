@@ -1,19 +1,47 @@
 import asyncio
 import subprocess
 
-from typing import List
-from sqlalchemy.orm import Session
+from typing import List, Optional
+from datetime import timedelta
 
-from fastapi import Depends, Request, HTTPException
+from asyncpg import Connection
+from pydantic import BaseModel
+from jose import JWTError, jwt
+from sqlalchemy.orm import Session
+from passlib.context import CryptContext
+
+from fastapi import Depends, Request, HTTPException, status
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import BackgroundTasks, FastAPI, WebSocket, WebSocketDisconnect
 
-from . import crud, models, schemas
-from .database import SessionLocal, engine, database
+from . import crud, models, schemas, auth
+from .config import settings
+from .database import SessionLocal, engine, database, get_db_connection
 
 app = FastAPI()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+templates = Jinja2Templates(directory="templates")
+
+
+async def get_async_db():
+    db = await get_db_connection()
+    try:
+        yield db
+    finally:
+        await db.close()
+
+
+# @app.get("/users/me/", response_model=User)
+# async def read_users_me(current_user: User = Depends(get_current_active_user)):
+#     return current_user
+
+
+# @app.get("/users/me/deployments/")
+# async def read_own_deployments(current_user: User = Depends(get_current_active_user)):
+#     return [{"item_id": "Foo", "owner": current_user.username}]
 
 
 # Dependency
@@ -39,12 +67,11 @@ app.add_middleware(
 )
 
 
-templates = Jinja2Templates(directory="templates")
-
-
 @app.on_event("startup")
 async def startup():
-    await database.connect()
+    db = await database.connect()
+    print("async db: ", db)
+    return db
 
 
 @app.on_event("shutdown")
@@ -79,6 +106,60 @@ async def get():
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
+
+
+def fake_decode_token(token):
+    return schemas.User(username=token + "fakedecoded", email="john@example.com", full_name="John Doe")
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    print("token: ", token)
+    user = fake_decode_token(token)
+    return user
+
+
+@app.get("/deployments/")
+async def read_deployments(token: str = Depends(oauth2_scheme)):
+    return {"token": token}
+
+
+def fake_hash_password(password: str):
+    return "fakehashed" + password
+
+
+def get_user(db, username: str):
+    if username in db:
+        user_dict = db[username]
+        return schemas.UserInDB(**user_dict)
+
+
+async def get_current_active_user(current_user: schemas.User = Depends(get_current_user)):
+    if current_user.disabled:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+
+@app.get("/users/me")
+async def read_users_me(current_user: schemas.User = Depends(auth.get_current_user)):
+    return current_user
+
+
+@app.post("/token")
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(), db: Connection = Depends(get_async_db)
+):
+    # user_row = await crud.aget_user_by_name(db, form_data.username)
+    user = await auth.authenticate_user(db, form_data.username, form_data.password)
+    print("user: ", user)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
+    access_token = auth.create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 class ConnectionManager:

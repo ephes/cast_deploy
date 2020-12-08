@@ -1,3 +1,6 @@
 # hmm, maybe just use just
+
 PYTHONPATH=. alembic revision --autogenerate -m "initial migration"
+PYTHONPATH=. alembic upgrade head
+
 PYTHONPATH=.. jupyter notebook --notebook-dir notebooks

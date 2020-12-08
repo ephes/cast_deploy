@@ -24,7 +24,8 @@ async def get_async_users(db):
 
 async def aget_user_by_name(db, username):
     stmt = await db.prepare("select * from users where username = $1")
-    return await stmt.fetchrow(username)
+    user_row = await stmt.fetchrow(username)
+    return schemas.UserInDB(**user_row)
 
 
 def get_user_by_name(db, username):

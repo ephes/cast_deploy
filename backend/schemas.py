@@ -21,7 +21,7 @@ class Deployment(DeploymentBase):
 
 
 class UserBase(BaseModel):
-    email: str
+    username: str
 
 
 class UserCreate(UserBase):
@@ -30,8 +30,13 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: int
+    username: str
     is_active: bool
     deployments: List[Deployment] = []
 
     class Config:
         orm_mode = True
+
+
+class UserInDB(User):
+    hashed_password: str
