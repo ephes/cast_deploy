@@ -23,7 +23,7 @@ from .database import SessionLocal, engine, database, get_db_connection
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="backend/templates")
 
 
 async def get_async_db():
@@ -94,6 +94,8 @@ async def async_read_users():
 
 @app.get("/", response_class=HTMLResponse)
 async def get(request: Request):
+    import os
+    print(os.getcwd())
     return templates.TemplateResponse("deploy.html", {"request": request, "counter": "{{ counter }}"})
 
 
@@ -139,9 +141,9 @@ async def get_current_active_user(current_user: schemas.User = Depends(get_curre
     return current_user
 
 
-@app.get("/users/me")
-async def read_users_me(current_user: schemas.User = Depends(auth.get_current_user)):
-    return current_user
+# @app.get("/users/me")
+# async def read_users_me(current_user: schemas.User = Depends(auth.get_current_user)):
+#     return current_user
 
 
 @app.post("/token")
@@ -200,8 +202,8 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
 async def run_deploy():
     print("running deployment")
     proc = await asyncio.create_subprocess_shell(
-        # "./deploy_cast_hosting.sh",
-        "./sample.sh",
+        "./deploy_cast_hosting.sh",
+        # "./sample.sh",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT,
     )
