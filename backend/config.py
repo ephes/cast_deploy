@@ -9,9 +9,16 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     database_url: str = Field(..., env="DATABASE_URL")
     secret_key: str = Field(..., env="SECRET_KEY")
+    test: bool = Field(default=False, env="TEST")
 
     class Config:
         env_file = ".env"
 
 
+class TestSettings(Settings):
+    database_url: str = Field(..., env="TEST_DATABASE_URL")
+
+
 settings = Settings()
+if settings.test:
+    settings = TestSettings()
