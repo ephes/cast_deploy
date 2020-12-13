@@ -6,3 +6,5 @@ PYTHONPATH=. alembic revision --autogenerate -m "initial migration"
 PYTHONPATH=. alembic upgrade head
 
 PYTHONPATH=.. jupyter notebook --notebook-dir notebooks
+
+TEST=true pytest -k test_verify_password
