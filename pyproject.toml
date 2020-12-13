@@ -23,6 +23,7 @@ passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 [tool.poetry.dev-dependencies]
 pytest = "^6.0"
 bpython = "^0.20.1"
+black = {version = "^20.8b1", allow-prereleases = true}
 
 [tool.black]
 line-length = 120
