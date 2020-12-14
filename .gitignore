@@ -20,3 +20,6 @@ __pycache__/
 sqlite.db
 test.db
 foo.db
+
+# notebooks
+*-checkpoint.ipynb
