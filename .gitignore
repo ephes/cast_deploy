@@ -19,3 +19,4 @@ __pycache__/
 # databases
 sqlite.db
 test.db
+foo.db
