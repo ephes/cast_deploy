@@ -19,11 +19,14 @@ from fastapi import BackgroundTasks, FastAPI, WebSocket, WebSocketDisconnect
 
 from . import crud, models, schemas, auth
 from .config import settings
+from .repository import DatabasesRepository
 from .database import SessionLocal, engine, database, get_db_connection
+from backend import repository
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 templates = Jinja2Templates(directory="backend/templates")
+db = repository.DatabasesRepository(settings.database_url)
 
 
 async def get_async_db():
@@ -69,14 +72,13 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup():
-    db = await database.connect()
-    print("async db: ", db)
-    return db
+    await db.connect()
+    print("async repo: ", db)
 
 
 @app.on_event("shutdown")
 async def shutdown():
-    await database.disconnect()
+    await db.disconnect()
 
 
 @app.post("/users/", response_model=schemas.User)
@@ -101,6 +103,9 @@ async def get(request: Request):
 
 @app.get("/hello")
 async def get():
+    print(db)
+    # print(await repo.get_user("jochen"))
+    print("foo bar baz")
     return {"message": "hello from fastapi"}
 
 
