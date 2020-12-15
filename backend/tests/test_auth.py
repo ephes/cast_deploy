@@ -1,3 +1,7 @@
+import pytest
+
+from httpx import AsyncClient
+
 from ..auth import verify_password
 
 
@@ -5,10 +9,13 @@ def test_verify_password(user, password):
     assert verify_password(password, user.hashed_password)
     assert not verify_password("", user.hashed_password)
 
-
-def test_api_token(client):
+@pytest.mark.asyncio
+async def test_api_token(app):
     # assert not authenticated already
-    response = client.get("/users/me")
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.get("/users/me")
+
+    # response = client.get("/users/me")
     print(response.status_code)
     assert response.status_code == 401
     assert response.json() == {"detail": "Not authenticated"}

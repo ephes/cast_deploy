@@ -11,11 +11,11 @@ from .. import crud
 from .. import repository
 from ..models import User, Base
 from ..config import settings
-from ..main import app, get_db, get_async_db
+from ..main import app as fastapi_app, get_db, get_async_db
 from ..auth import get_password_hash
 
 
-test_client = TestClient(app)
+test_client = TestClient(fastapi_app)
 
 print("settings.database_url: ", settings.database_url)
 
@@ -30,8 +30,8 @@ def client():
 
 
 @pytest.fixture
-def fastapi_app():
-    return app
+def app():
+    return fastapi_app
 
 
 @pytest.fixture

@@ -37,8 +37,8 @@ async def get_async_db():
         await db.close()
 
 
-# @app.get("/users/me/", response_model=User)
-# async def read_users_me(current_user: User = Depends(get_current_active_user)):
+# @app.get("/users/me/", response_model=schemas.User)
+# async def read_users_me(current_user: schemas.User = Depends(get_current_active_user)):
 #     return current_user
 
 
@@ -146,9 +146,9 @@ async def get_current_active_user(current_user: schemas.User = Depends(get_curre
     return current_user
 
 
-# @app.get("/users/me")
-# async def read_users_me(current_user: schemas.User = Depends(auth.get_current_user)):
-#     return current_user
+@app.get("/users/me")
+async def read_users_me(current_user: schemas.User = Depends(auth.get_current_user)):
+    return current_user
 
 
 @app.post("/token")
