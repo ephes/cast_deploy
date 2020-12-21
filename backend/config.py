@@ -1,5 +1,9 @@
+from pathlib import Path
+
 from pydantic import Field
 from pydantic import BaseSettings
+
+ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent
 
 
 class Settings(BaseSettings):
@@ -10,9 +14,13 @@ class Settings(BaseSettings):
     database_url: str = Field(..., env="DATABASE_URL")
     secret_key: str = Field(..., env="SECRET_KEY")
     test: bool = Field(default=False, env="TEST")
+    origins: list[str] = [
+        "http://localhost",
+        "http://localhost:3000",
+    ]
 
     class Config:
-        env_file = ".env"
+        env_file = ROOT_DIR / ".env"
 
 
 class TestSettings(Settings):

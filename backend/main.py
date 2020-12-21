@@ -17,29 +17,16 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import BackgroundTasks, FastAPI, WebSocket, WebSocketDisconnect
 
-from . import crud, models, schemas, auth
+from . import crud, models, schemas, auth, repository
 from .config import settings
 from .repository import DatabasesRepository
 from .database import SessionLocal, engine, database, get_db_connection
-from backend import repository
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 templates = Jinja2Templates(directory="backend/templates")
-db = repository.DatabasesRepository(settings.database_url)
-
-
-async def get_async_db():
-    db = await get_db_connection()
-    try:
-        yield db
-    finally:
-        await db.close()
-
-
-# @app.get("/users/me/", response_model=schemas.User)
-# async def read_users_me(current_user: schemas.User = Depends(get_current_active_user)):
-#     return current_user
+print("set_db with url: ", settings.database_url)
+repository.set_db(repository.DatabasesRepository(settings.database_url))
 
 
 # @app.get("/users/me/deployments/")
@@ -47,23 +34,9 @@ async def get_async_db():
 #     return [{"item_id": "Foo", "owner": current_user.username}]
 
 
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-origins = [
-    "http://localhost",
-    "http://localhost:3000",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -72,78 +45,42 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup():
+    db = repository.get_db()
     await db.connect()
-    print("async repo: ", db)
+    print("startup async databases repo: ", db)
 
 
 @app.on_event("shutdown")
 async def shutdown():
+    db = repository.get_db()
     await db.disconnect()
-
-
-@app.post("/users/", response_model=schemas.User)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_email(db, email=user.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return crud.create_user(db=db, user=user)
-
-
-@app.get("/users2/", response_model=List[schemas.User])
-async def async_read_users():
-    return await crud.get_async_users(database)
 
 
 @app.get("/", response_class=HTMLResponse)
 async def get(request: Request):
     import os
+
     print(os.getcwd())
     return templates.TemplateResponse("deploy.html", {"request": request, "counter": "{{ counter }}"})
 
 
 @app.get("/hello")
 async def get():
-    print(db)
-    # print(await repo.get_user("jochen"))
-    print("foo bar baz")
     return {"message": "hello from fastapi"}
 
 
 @app.get("/users/", response_model=List[schemas.User])
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    users = crud.get_users(db, skip=skip, limit=limit)
+async def read_users(skip: int = 0, limit: int = 100, db: repository.AbstractRepository = Depends(repository.get_db)):
+    users = await db.list_users(skip=skip, limit=limit)
     return users
 
 
-def fake_decode_token(token):
-    return schemas.User(username=token + "fakedecoded", email="john@example.com", full_name="John Doe")
-
-
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    print("token: ", token)
-    user = fake_decode_token(token)
-    return user
-
-
-@app.get("/deployments/")
-async def read_deployments(token: str = Depends(oauth2_scheme)):
-    return {"token": token}
-
-
-def fake_hash_password(password: str):
-    return "fakehashed" + password
-
-
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return schemas.UserInDB(**user_dict)
-
-
-async def get_current_active_user(current_user: schemas.User = Depends(get_current_user)):
-    if current_user.disabled:
-        raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user
+@app.post("/users/", response_model=schemas.User)
+def create_user(user: schemas.UserCreate, db: repository.AbstractRepository = Depends(repository.get_db)):
+    db_user = crud.get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return crud.create_user(db=db, user=user)
 
 
 @app.get("/users/me")
@@ -153,7 +90,7 @@ async def read_users_me(current_user: schemas.User = Depends(auth.get_current_us
 
 @app.post("/token")
 async def login_for_access_token(
-    form_data: OAuth2PasswordRequestForm = Depends(), db: Connection = Depends(get_async_db)
+    form_data: OAuth2PasswordRequestForm = Depends(), db: Connection = Depends(repository.get_db)
 ):
     # user_row = await crud.aget_user_by_name(db, form_data.username)
     user = await auth.authenticate_user(db, form_data.username, form_data.password)

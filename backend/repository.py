@@ -2,7 +2,6 @@ import abc
 
 from databases import Database
 
-# from . import models
 from . import schemas
 
 
@@ -22,6 +21,7 @@ class SqlAlchemyRepository(AbstractRepository):
 
     def add_user(self, user):
         self.session.add(user)
+
 
 def get_user_by_name(db, username):
     return db.query(models.User).filter_by(username=username).first()
@@ -54,16 +54,17 @@ class DatabasesRepository(AbstractRepository):
 
     async def connect(self):
         await self.db.connect()
-    
+
     async def disconnect(self):
         await self.db.disconnect()
 
     async def add_user(self, user):
         query = (
-            "INSERT INTO users(id, username, is_active)"
-            " VALUES (:id, :username, :is_active)"
+            "INSERT INTO users(id, username, hashed_password, is_active)"
+            " VALUES (:id, :username, :hashed_password, :is_active)"
         )
         user_dict = user.dict()
+        print("user_dict: ", user_dict)
         del user_dict["deployments"]
         values = [user_dict]
         await self.db.execute_many(query=query, values=values)
@@ -71,9 +72,24 @@ class DatabasesRepository(AbstractRepository):
     async def get_user(self, username):
         query = "select * from users where username = :username"
         user = await self.db.fetch_one(query, values={"username": username})
-        return schemas.User(**dict(user))
+        if user is not None:
+            return schemas.UserInDB(**dict(user))
+        else:
+            return user
 
-    async def list_users(self):
+    async def list_users(self, skip=None, limit=None):
         query = "select * from users"
         users = await self.db.fetch_all(query)
         return [schemas.User(**dict(user)) for user in users]
+
+
+_db = None
+
+
+def get_db():
+    return _db
+
+
+def set_db(db):
+    global _db
+    _db = db
