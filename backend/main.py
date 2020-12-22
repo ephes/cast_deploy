@@ -1,14 +1,7 @@
 import asyncio
-import subprocess
 
-from typing import List, Optional
+from typing import List
 from datetime import timedelta
-
-from asyncpg import Connection
-from pydantic import BaseModel
-from jose import JWTError, jwt
-from sqlalchemy.orm import Session
-from passlib.context import CryptContext
 
 from fastapi import Depends, Request, HTTPException, status
 from fastapi.responses import HTMLResponse
@@ -17,21 +10,14 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import BackgroundTasks, FastAPI, WebSocket, WebSocketDisconnect
 
-from . import crud, models, schemas, auth, repository
 from .config import settings
-from .repository import DatabasesRepository
-from .database import SessionLocal, engine, database, get_db_connection
+from . import schemas, auth, repository
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 templates = Jinja2Templates(directory="backend/templates")
 print("set_db with url: ", settings.database_url)
 repository.set_db(repository.DatabasesRepository(settings.database_url))
-
-
-# @app.get("/users/me/deployments/")
-# async def read_own_deployments(current_user: User = Depends(get_current_active_user)):
-#     return [{"item_id": "Foo", "owner": current_user.username}]
 
 
 app.add_middleware(
@@ -75,14 +61,6 @@ async def read_users(skip: int = 0, limit: int = 100, db: repository.AbstractRep
     return users
 
 
-@app.post("/users/", response_model=schemas.User)
-def create_user(user: schemas.UserCreate, db: repository.AbstractRepository = Depends(repository.get_db)):
-    db_user = crud.get_user_by_email(db, email=user.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return crud.create_user(db=db, user=user)
-
-
 @app.get("/users/me")
 async def read_users_me(current_user: schemas.User = Depends(auth.get_current_user)):
     return current_user
@@ -90,7 +68,7 @@ async def read_users_me(current_user: schemas.User = Depends(auth.get_current_us
 
 @app.post("/token")
 async def login_for_access_token(
-    form_data: OAuth2PasswordRequestForm = Depends(), db: Connection = Depends(repository.get_db)
+    form_data: OAuth2PasswordRequestForm = Depends(), db: repository.AbstractRepository = Depends(repository.get_db)
 ):
     # user_row = await crud.aget_user_by_name(db, form_data.username)
     user = await auth.authenticate_user(db, form_data.username, form_data.password)
