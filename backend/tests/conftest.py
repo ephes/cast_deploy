@@ -1,13 +1,10 @@
 import pytest
-
 from fastapi.testclient import TestClient
 
 from .. import repository
-
-from ..schemas import UserInDB
 from ..auth import get_password_hash
 from ..main import app as fastapi_app
-
+from ..schemas import UserInDB
 
 test_client = TestClient(fastapi_app)
 

@@ -22,6 +22,7 @@ passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 httpx = "^0.16.1"
 coverage = "^5.3.1"
 flake8 = "^3.8.4"
+isort = "^5.6.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.0"
@@ -52,3 +53,8 @@ omit = [
     "*alembic*",
     "*tests*",
 ]
+
+[tool.isort]
+profile = "black"
+src_paths = ["backend"]
+skip = ["alembic"]

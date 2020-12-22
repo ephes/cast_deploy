@@ -2,8 +2,7 @@ import abc
 
 from databases import Database
 
-from . import models
-from . import schemas
+from . import models, schemas
 
 
 class AbstractRepository(abc.ABC):

@@ -1,14 +1,13 @@
-from typing import Optional
 from datetime import datetime, timedelta
-
-from pydantic import BaseModel
-from jose import JWTError, jwt
-from passlib.context import CryptContext
+from typing import Optional
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+from pydantic import BaseModel
 
-from . import schemas, repository
+from . import repository, schemas
 from .config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
