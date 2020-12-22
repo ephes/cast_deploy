@@ -26,3 +26,4 @@ foo.db
 
 # coverage
 .coverage
+htmlcov
