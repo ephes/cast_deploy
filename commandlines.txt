@@ -12,9 +12,13 @@ PYTHONPATH=.. jupyter notebook --notebook-dir notebooks
 
 # lint
 flake8
+isort backend
 black backend
 
 # tests + coverage
 TEST=true pytest
 TEST=true pytest -k test_verify_password
 TEST=true coverage run -m pytest && coverage html
+
+# cleanup
+flake8 && TEST=true pytest && isort backend && black backend
