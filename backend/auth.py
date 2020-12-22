@@ -56,8 +56,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 async def get_current_user(
     db: repository.AbstractRepository = Depends(repository.get_db), token: str = Depends(oauth2_scheme)
 ):
-    print("in get_current_user: ", token)
-    print("get current users db: ", db)
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -75,7 +73,7 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
     # remove hashed password
-    user = schemas.User(**user.dict())
+    user = schemas.User.from_orm(user)
     return user
 
 
