@@ -63,9 +63,14 @@ async def get_hello():
 
 
 @app.get("/users/", response_model=List[schemas.User])
-async def read_users(skip: int = 0, limit: int = 100, db: repository.AbstractRepository = Depends(repository.get_db)):
-    users = await db.list_users(skip=skip, limit=limit)
-    return users
+async def read_users(
+    skip: int = 0,
+    limit: int = 100,
+    db: repository.AbstractRepository = Depends(repository.get_db),
+    current_active_user: schemas.User = Depends(auth.get_current_active_user),
+):
+    print("active user: ", current_active_user)
+    return await db.list_users(skip=skip, limit=limit)
 
 
 @app.get("/users/me")
