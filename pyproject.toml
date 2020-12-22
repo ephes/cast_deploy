@@ -43,3 +43,12 @@ addopts = "-ra -q -p no:warnings"
 testpaths = [
     "backend/tests",
 ]
+
+[tool.coverage.run]
+include = [
+    "backend/*"
+]
+omit = [
+    "*alembic*",
+    "*tests*",
+]

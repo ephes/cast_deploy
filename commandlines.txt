@@ -1,13 +1,20 @@
 # hmm, maybe just use just
 
+# app server
 uvicorn backend.main:app --reload
 
+# migrations
 PYTHONPATH=. alembic revision --autogenerate -m "initial migration"
 PYTHONPATH=. alembic upgrade head
 
+# notebook server
 PYTHONPATH=.. jupyter notebook --notebook-dir notebooks
 
-TEST=true pytest -k test_verify_password
+# lint
+flake8
+black backend
 
-# coverage
-TEST=true coverage run --source=backend -m pytest && coverage html
+# tests + coverage
+TEST=true pytest
+TEST=true pytest -k test_verify_password
+TEST=true coverage run -m pytest && coverage html
