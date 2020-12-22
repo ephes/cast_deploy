@@ -2,6 +2,7 @@ import abc
 
 from databases import Database
 
+from . import models
 from . import schemas
 
 

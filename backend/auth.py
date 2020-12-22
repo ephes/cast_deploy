@@ -1,7 +1,6 @@
 from typing import Optional
 from datetime import datetime, timedelta
 
-from asyncpg import Connection
 from pydantic import BaseModel
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -9,7 +8,7 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
-from . import crud, schemas, repository
+from . import schemas, repository
 from .config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

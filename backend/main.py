@@ -51,7 +51,7 @@ async def get(request: Request):
 
 
 @app.get("/hello")
-async def get():
+async def get_hello():
     return {"message": "hello from fastapi"}
 
 
