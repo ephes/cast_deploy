@@ -23,3 +23,6 @@ foo.db
 
 # notebooks
 *-checkpoint.ipynb
+
+# coverage
+.coverage
