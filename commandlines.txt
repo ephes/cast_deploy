@@ -8,3 +8,6 @@ PYTHONPATH=. alembic upgrade head
 PYTHONPATH=.. jupyter notebook --notebook-dir notebooks
 
 TEST=true pytest -k test_verify_password
+
+# coverage
+TEST=true coverage run --source=backend -m pytest && coverage html
