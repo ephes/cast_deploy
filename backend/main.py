@@ -82,9 +82,7 @@ async def read_users_me(current_user: schemas.User = Depends(auth.get_current_us
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(), db: repository.AbstractRepository = Depends(repository.get_db)
 ):
-    # user_row = await crud.aget_user_by_name(db, form_data.username)
     user = await auth.authenticate_user(db, form_data.username, form_data.password)
-    print("user: ", user)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
