@@ -27,3 +27,6 @@ foo.db
 # coverage
 .coverage
 htmlcov
+
+# pycharm
+.idea
