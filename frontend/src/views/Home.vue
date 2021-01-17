@@ -5,7 +5,6 @@
 </template>
 <script>
 import { ref } from 'vue';
-import { stringifyQuery } from 'vue-router';
 
 export default {
   name: 'Home',
